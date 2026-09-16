@@ -21,6 +21,32 @@ minimal Bicep infrastructure so the complete scenario can be tested with
 > The Workflow Standard WS1 plan incurs Azure charges while it exists. Run
 > `azd down --purge` when you finish testing.
 
+## Storage authentication limitation
+
+Logic Apps Standard on a normal Workflow Service Plan currently requires
+shared-key access to its hosting storage account. The runtime uses the account
+for `AzureWebJobsStorage` and an Azure Files content share configured through
+`WEBSITE_CONTENTAZUREFILECONNECTIONSTRING`.
+
+The system-assigned managed identity on the logic app can be used by workflows
+and connectors, but it does not replace shared-key authentication for this host
+storage configuration. Microsoft documents disabling storage account key access
+for this scenario only when the logic app runs in an App Service Environment
+v3. This small test template intentionally does not provision an ASEv3 because
+of its complexity and cost.
+
+If your subscription has a policy that disallows local authentication methods
+on storage accounts, `azd up` fails while provisioning the storage account. In
+that subscription, use the [package-only test](#test-packaging-without-deploying)
+below, or deploy the template in a test subscription that permits shared-key
+storage access.
+
+References:
+
+- [Create a Standard workflow in Azure](https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-azure-portal)
+- [Standard Logic Apps app and host settings](https://learn.microsoft.com/azure/logic-apps/edit-app-settings-host-settings)
+- [Prevent Shared Key authorization for Azure Storage](https://learn.microsoft.com/azure/storage/common/shared-key-authorization-prevent)
+
 ## Prerequisites
 
 - Azure Developer CLI 1.28.1 or later
